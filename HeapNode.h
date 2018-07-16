@@ -12,17 +12,13 @@ public:
                        value = _value; }
 
   void addChild(T _value) { children.push_back(new HeapNode<T>(_value)); }
+
   void setMarked() { marked = true; }
   void setUnmarked() { marked = false; }
-  void setValue(T _value) { value = _value; }
-
   bool isMarked() { return marked; }
+
   int numChildren() { return children.size(); }
-  HeapNode<T>* getParent() { return parent; }
-  T getValue() { return value; }
 
-
-private:
   T value;
   bool marked;
   HeapNode<T>* parent;

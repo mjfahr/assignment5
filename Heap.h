@@ -15,18 +15,57 @@ public:
   Heap(T rootValue) { root = new HeapNode<T>(rootValue);
                       right = nullptr;
                       left = nullptr; }
+  Heap(HeapNode<T>* newRoot) { root = newRoot; }
   ~Heap();
 
   bool Insert(const T _value);
   bool Delete(const T _value);
   bool Search(const T _value) const;
 
+  bool isEmpty() { return root = nullptr; }
+
   HeapNode<T>* root;
   Heap<T>* right;
   Heap<T>* left;
+
+private:
+  void destructor(HeapNode<T>* current);
+
 };
 
+template <class T>
+Heap<T>::~Heap()
+{
+  destructor(root);
+}
 
+// Recursive helper function for the destructor
+template <class T>
+void Heap<T>::destructor(HeapNode<T>* current)
+{
+  for (HeapNode<T>* node : current->children)
+    destructor(node);
+
+  delete current;
+}
+
+template <class T>
+bool Heap<T>::Insert(const T _value)
+{
+
+}
+
+template <class T>
+bool Heap<T>::Delete(const T _value)
+{
+
+}
+
+template <class T>
+bool Heap<T>::Search(const T _value) const
+{
+
+}
 
 
 #endif
