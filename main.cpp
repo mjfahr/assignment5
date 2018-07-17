@@ -10,15 +10,19 @@ int main()
 
   h1.Insert(5);
 
-  cout << h1.getMin() << endl;
+
 
   h1.Insert(6);
 
-  cout << h1.getMin() << endl;
+
 
   h1.Insert(4);
 
-  cout << h1.getMin() << endl;
+  h1.print();
+
+  h1.deleteMin();
+
+  h1.print();
 
   return 0;
 }

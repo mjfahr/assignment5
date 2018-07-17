@@ -24,7 +24,7 @@ public:
 
   bool isEmpty() { return root = nullptr; }
 
-  HeapNode<T>* root;
+  HeapNode<T>* root; // Potential changes: (1) add a new layer: HeapList which separates Left and Right from the heap itself (2) make the children of a heap heaps themselves -- a fully recursive data structure.
   Heap<T>* right;
   Heap<T>* left;
 
