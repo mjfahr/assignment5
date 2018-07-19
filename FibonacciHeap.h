@@ -4,6 +4,7 @@
 #include <limits>
 #include <iostream>
 #include "Heap.h"
+#include "HeapList.h"
 
 using namespace std;
 
@@ -22,16 +23,12 @@ public:
 
   bool isEmpty() { return smallest == nullptr; }
 
-  void print() const;
-
 
 private:
   T MIN; // Smallest possible value for a node in the heap
   int getRank(HeapNode<T>* node) { return node->children.size(); }
-  void addHeap(Heap<T>* newHeap);
   void combineHeaps(HeapNode<T>* baseHeapRoot, Heap<T>* subHeap);
   void removeHeap(Heap<T>* heap);
-  void printHelper(HeapNode<T>* current) const;
   void setSmallest();
 
   Heap<T>* smallest; // Equivalent to the 'head' node of a linked list. The root of this heap will be the smallest value in the fibonacci heap.
@@ -70,32 +67,6 @@ void FibonacciHeap<T>::Insert(const T _value)
 {
   Heap<T>* newHeap = new Heap<T>(_value);
   addHeap(newHeap);
-}
-
-//addHeap: Private: Adds a new heap to the circular, doubly-linked list of heaps.
-template <class T>
-void FibonacciHeap<T>::addHeap(Heap<T>* newHeap)
-{
-  if (!isEmpty())
-  {
-    // Insert new heap into list, to the right of smallest (arbitrary choice)
-    newHeap->right = smallest->right;
-    newHeap->left = smallest;
-
-    newHeap->right->left = newHeap;
-    smallest->right = newHeap;
-
-    // Move smallest pointer if necessary
-    if (smallest->root->value > newHeap->root->value)
-      smallest = newHeap;
-  }
-  else // Fibonacci heap is empty, first value is the smallest.
-  {
-    smallest = newHeap;
-    // Create circular linking
-    smallest->right = smallest;
-    smallest->left = smallest;
-  }
 }
 
 //deleteMin: Public: Removes the minimum value of the heap, a.k.a the root of 'smallest'. This removes ONLY the root, not the entire heap.
@@ -205,29 +176,7 @@ void FibonacciHeap<T>::setSmallest()
 
     ptr = ptr->right;
 
-  } 
-}
-
-//print: public: prints all the values of the fibonacci heap, one sub-heap at a time -- starting with smallest.
-template <class T>
-void FibonacciHeap<T>::print() const
-{
-  Heap<T>* ptr = smallest;
-
-  do
-  {
-    printHelper(ptr->root);
-    cout << endl;
-    ptr = ptr->right;
-  } while (ptr != smallest);
-}
-
-template <class T>
-void FibonacciHeap<T>::printHelper(HeapNode<T>* current) const
-{
-  cout << current->value << " ";
-  for (HeapNode<T>* node : current->children)
-    printHelper(node);
+  }
 }
 
 #endif
