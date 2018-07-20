@@ -3,8 +3,7 @@
 
 #include <limits>
 #include <iostream>
-#include "Heap.h"
-#include "HeapList.h"
+#include "FibonacciNode.h"
 
 using namespace std;
 
@@ -13,25 +12,24 @@ class FibonacciHeap
 {
 public:
   FibonacciHeap();
-  FibonacciHeap(Heap<T>* initHeap);
+  FibonacciHeap(FibonacciNode<T>* node);
   ~FibonacciHeap();
 
-  T peekMin() { return smallest->root->value; }
+  T peekMin() { return smallest->value; }
   void Insert(const T _value);
-  void deleteMin();
-  void decreaseKey(HeapNode<T>* node, T amt);
+  void extractMin();
+  void decreaseKey(FibonacciNode<T>* node, T decreaseAmt);
+  void Delete(FibonacciNode<T>* node);
 
   bool isEmpty() { return smallest == nullptr; }
-
+  FibonacciHeap<T>* Merge(FibonacciHeap<T>* heap1, FibonacciHeap<T>* heap2);
 
 private:
-  T MIN; // Smallest possible value for a node in the heap
-  int getRank(HeapNode<T>* node) { return node->children.size(); }
-  void combineHeaps(HeapNode<T>* baseHeapRoot, Heap<T>* subHeap);
-  void removeHeap(Heap<T>* heap);
+  int getRank(FibonacciNode<T>* node) // Number of children of a node (just immediate children
   void setSmallest();
 
-  Heap<T>* smallest; // Equivalent to the 'head' node of a linked list. The root of this heap will be the smallest value in the fibonacci heap.
+  T MIN; // Smallest possible value for a node in the heap
+  FibonacciNode<T>* smallest; // Equivalent to the 'head' node of a linked list. The root of this heap will be the smallest value in the fibonacci heap.
 
 };
 
@@ -45,11 +43,11 @@ FibonacciHeap<T>::FibonacciHeap()
 }
 
 template <class T>
-FibonacciHeap<T>::FibonacciHeap(Heap<T>* initHeap)
+FibonacciHeap<T>::FibonacciHeap(FibonacciNode<T>* node)
 {
-  smallest = initHeap;
-  smallest->right = initHeap;
-  smallest->left = initHeap;
+  smallest = node;
+  smallest->right = node;
+  smallest->left = node;
   //Set the minimum possible value for any node (used to simplify code for deleting a node) NOTE: only works for numeric types
   if (numeric_limits<T>::is_specialized)
      MIN = numeric_limits<T>::lowest();
@@ -65,118 +63,72 @@ FibonacciHeap<T>::~FibonacciHeap()
 template <class T>
 void FibonacciHeap<T>::Insert(const T _value)
 {
-  Heap<T>* newHeap = new Heap<T>(_value);
-  addHeap(newHeap);
+  FibonacciNode<T>* newNode = new FibonacciNode<T>(_value);
+  // Insert the new node into the top level of the heap
 }
 
 //deleteMin: Public: Removes the minimum value of the heap, a.k.a the root of 'smallest'. This removes ONLY the root, not the entire heap.
 template <class T>
-void FibonacciHeap<T>::deleteMin()
+void FibonacciHeap<T>::extractMin()
 {
-  // Create new heaps with each of the to-be-deleted node's children as the roots
-  for (HeapNode<T>* newRoot : smallest->root->children)
-  {
-    Heap<T>* newHeap = new Heap<T>(newRoot);
-    addHeap(newHeap);
-  }
-  // remove heap of which smallest is the root (the sub-heaps have already been added to the list)
-  Heap<T>* toRemove = smallest;
-  smallest = smallest->right; // Set smallest to an arbitrary node, it will be set appropriately later.
-  cout << "removeHeap(1)\n";
-  removeHeap(toRemove);
-  cout << "end removeHeap(1)\n";
-  cout << "setSmallest(1)\n";
-  setSmallest(); // set smallest to the appropriate heap;
-  cout << "end setSmallest(1)\n";
-
-
-  // Consolidate any heaps of equal rank
-  bool loopAgain = true;
-  while (loopAgain)
-  {
-    loopAgain = false;
-    Heap<T>* ptr = smallest;
-    Heap<T>* runner = smallest->right;
-    do
-    {
-      while (runner != smallest)
-      {
-        if (getRank(ptr->root) == getRank(runner->root))
-        {
-          // remove the heap with the larger root value from the heap-list
-          Heap<T>* toInsert = (ptr->root->value > runner->root->value ? ptr : runner);
-          Heap<T>* baseHeap = (ptr->root->value > runner->root->value ? runner : ptr);
-          cout << "removeHeap(2)\n";
-          removeHeap(toInsert);
-          cout << "end removeHeap(2)\n";
-          // and insert it into the heap with the larger value
-          cout << "combineHeaps(1)\n";
-          combineHeaps(baseHeap->root, toInsert);
-          cout << "end combineHeaps(1)\n";
-
-          // If two heaps of equal rank were found, check again to ensure that the changes did not create more equal-rank heaps.
-          loopAgain = true;
-        }
-        runner = runner->right;
-      }
-      ptr = ptr->right;
-    } while (ptr != smallest);
-  }
+  // Add smallest's children to the top level of the heap
+  // Remove smallest from the heap
+  // Consolidate nodes on the top level so that no two nodes have the same rank (# of children)
+  // find the new smallest node
 }
 
-//removeHeap: private: Removes a heap from the circular, doubly-linked list of heaps, and returns a pointer to its root node.
+//removeHeap: private: Removes a node from the circular, doubly-linked list of nodes
 template <class T>
-void FibonacciHeap<T>::removeHeap(Heap<T>* heap)
+void FibonacciHeap<T>::removeNode(FibonacciNode<T>* node)
 {
-  Heap<T>* toRemove = heap;
   // Reconnect doubly linked list
-  heap->left->right = heap->right;
-  heap->right->left = heap->left;
+  node->left->right = node->right;
+  node->right->left = node->left;
 
-  // Reset heap's left and right pointers NOTE: This does NOT change the children, only the structure of the chain of heaps.
-  heap->left = nullptr;
-  heap->right = nullptr;
-
-}
-
-//combineHeaps: Private: attatches a heap to an existing heap, preserving heap order.
-template <class T>
-void FibonacciHeap<T>::combineHeaps(HeapNode<T>* baseHeapRoot, Heap<T>* subHeap)
-{
-  HeapNode<T>* ptr = baseHeapRoot;
-
-  // Find the first (if any) child of the base heap that is greater than the root of the heap to-be-added
-  for (HeapNode<T>* node : ptr->children)
-  {
-    if (subHeap->root->value > node->value)
-    {
-      // Recursively continue down the heap until you find the best spot to insert.
-      combineHeaps(node, subHeap);
-      break; // But only follow one branch of the heap.
-    }
-  }
-  // Add the root of the subheap to the children of the node where they should be inserted.
-  baseHeapRoot->children.push_back(subHeap->root);
-  subHeap->root = nullptr;
-
+  // If the node's parent has a pointer to the node
+  if (node->parent->child == node)
+    if (node->right != node) // the node has a sibling
+      node->parent->child = node->right; // make the sibling the new child of the to-be-removed node's parent
 
 }
+
 
 //setSmallest: private: used to find the new min after a deleteMin call
 template <class T>
 void FibonacciHeap<T>::setSmallest()
 {
-  Heap<T>* ptr = smallest->right;
-  Heap<T>* init = smallest; // Used to keep track of where we started, since smallest will change.
+  FibonacciNode<T>* ptr = smallest->right;
+  FibonacciNode<T>* init = smallest; // Used to keep track of where we started, since smallest will change.
 
   while (ptr != init)
   {
-    if (ptr->root->value < smallest->root->value)
+    if (ptr->value < smallest->value)
       smallest = ptr;
 
     ptr = ptr->right;
 
   }
+}
+
+template <class T>
+void FibonacciHeap<T>::decreaseKey(FibonacciNode<T>* node, T decreaseAmt)
+{
+  node->value -= decreaseAmt;
+
+  //restore heap ordering, if violated
+}
+
+template <class T>
+void FibonacciHeap<T>::Delete(FibonacciNode<T>* node)
+{
+  // decrease key of node to MIN 
+  // deleteMin()
+}
+
+template <class T>
+FibonacciHeap<T>* FibonacciHeap<T>::Merge(FibonacciHeap<T>* heap1, FibonacciHeap<T>* heap2)
+{
+
 }
 
 #endif
