@@ -25,8 +25,9 @@ public:
   FibonacciHeap<T>* Merge(FibonacciHeap<T>* heap1, FibonacciHeap<T>* heap2);
 
 private:
-  int getRank(FibonacciNode<T>* node) // Number of children of a node (just immediate children
+  int getRank(FibonacciNode<T>* node); // Number of children of a node (just immediate children
   void setSmallest();
+  void addNode(FibonacciNode<T>* newNode);
 
   T MIN; // Smallest possible value for a node in the heap
   FibonacciNode<T>* smallest; // Equivalent to the 'head' node of a linked list. The root of this heap will be the smallest value in the fibonacci heap.
@@ -65,6 +66,33 @@ void FibonacciHeap<T>::Insert(const T _value)
 {
   FibonacciNode<T>* newNode = new FibonacciNode<T>(_value);
   // Insert the new node into the top level of the heap
+  addNode(newNode);
+}
+
+//addHeap: Private: Adds a new heap to the circular, doubly-linked list of heaps.
+template <class T>
+void FibonaccHeap<T>::addNode(Heap<T>* newNode)
+{
+  if (!isEmpty())
+  {
+    // Insert new heap into list, to the right of smallest (arbitrary choice)
+    newNode->right = smallest->right;
+    newNode->left = smallest;
+
+    newNode->right->left = newNode;
+    smallest->right = newNode;
+
+    // Move smallest pointer if necessary
+    if (smallest->root->value > newHeap->root->value)
+      smallest = newNode;
+  }
+  else // Fibonacci heap is empty, first value is the smallest.
+  {
+    smallest = newNode;
+    // Create circular linking
+    smallest->right = smallest;
+    smallest->left = smallest;
+  }
 }
 
 //deleteMin: Public: Removes the minimum value of the heap, a.k.a the root of 'smallest'. This removes ONLY the root, not the entire heap.
