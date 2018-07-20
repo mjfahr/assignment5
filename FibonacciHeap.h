@@ -85,9 +85,8 @@ void FibonacciHeap<T>::removeNode(FibonacciNode<T>* node)
   node->left->right = node->right;
   node->right->left = node->left;
 
-  // If the node's parent has a pointer to the node
-  if (node->parent->child == node)
-    if (node->right != node) // the node has a sibling
+  // If the node's parent points to the node as its child, and the node has a sibling
+  if (node->parent != nullptr && node->parent->child == node && node->right != node)
       node->parent->child = node->right; // make the sibling the new child of the to-be-removed node's parent
 
 }
@@ -121,7 +120,7 @@ void FibonacciHeap<T>::decreaseKey(FibonacciNode<T>* node, T decreaseAmt)
 template <class T>
 void FibonacciHeap<T>::Delete(FibonacciNode<T>* node)
 {
-  // decrease key of node to MIN 
+  // decrease key of node to MIN
   // deleteMin()
 }
 
@@ -129,6 +128,12 @@ template <class T>
 FibonacciHeap<T>* FibonacciHeap<T>::Merge(FibonacciHeap<T>* heap1, FibonacciHeap<T>* heap2)
 {
 
+}
+
+template <class T>
+int FibonacciHeap<T>::getRank(FibonacciNode<T>* node)
+{
+  // return the number of children of the node
 }
 
 #endif
