@@ -16,7 +16,6 @@ public:
   ~Heap();
 
   bool Insert(const T _value);
-  bool extractMin();
   void print();
 
   bool isMarked();

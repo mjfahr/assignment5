@@ -15,6 +15,7 @@ public:
 private:
   void addHeap(Heap<T>* newHeap);
   void printHelper(HeapNode<T>* current) const;
+  bool isEmpty();
 
 }
 
