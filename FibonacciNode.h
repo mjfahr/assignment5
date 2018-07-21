@@ -6,14 +6,14 @@ template <class T>
 class FibonacciNode
 {
 public:
-  HeapNode() {marked = false;
+  FibonacciNode() {marked = false;
               parent = nullptr;
               child = nullptr;
               left = nullptr;
               right = nullptr;
               rank = 0; }
 
-  HeapNode(T _value) { marked = false;
+  FibonacciNode(T _value) { marked = false;
                        value = _value;
                        parent = nullptr;
                        child = nullptr;
