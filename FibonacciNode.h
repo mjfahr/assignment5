@@ -24,7 +24,7 @@ public:
 
   T value;
   bool marked;
-  int rank; // NOTE: 'rank' is referred to in the algorithms book as 'degree', there is also a function in FibonacciHeap that can find the rank of a node, but using a variable would be faster.
+  int rank; // number of childen NOTE: 'rank' is referred to in the algorithms book as 'degree', there is also a function in FibonacciHeap that can find the rank of a node, but using a variable would be faster.
 
   FibonacciNode<T>* parent;
   FibonacciNode<T>* child;

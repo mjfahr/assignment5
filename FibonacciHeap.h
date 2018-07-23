@@ -124,7 +124,7 @@ void FibonacciHeap<T>::extractMin()
     }
 
     // Remove smallest from the heap and reconnect doubly linked list
-    if (smallest == smallest->right) // smallest is not the only node
+    if (smallest != smallest->right) // smallest is not the only node
     {
       smallest->left->right = smallest->right;
       smallest->right->left = smallest->left;
@@ -171,23 +171,73 @@ void FibonacciHeap<T>::setSmallest()
   }
 }
 
+template <class T>
+void FibonacciHeap<T>::cut(FibonacciNode<T>* node)
+{
+  // If the child has siblings
+  if (node->right != node)
+  {
+    //reconnect the circular list of siblings
+    node->left->right = node->right;
+    node->right->left = node->left;
+
+
+    // if the parent of node points to node as a child, change the child pointer
+    if (node->parent->child == node)
+      node->parent->child = node->right;
+  }
+
+  // decrease the degree/rank of the parent, since we removed a child
+  node->parent->rank--;
+  node->marked = false;
+
+  addNode(node);
+
+}
+
+template <class T>
+void FibonacciHeap<T>::cascadingCut(FibonacciNode<T>* node)
+{
+  if (node->parent != nullptr)
+  {
+    if (node->parent->marked == false)
+      node->parent->marked = true;
+    else
+    {
+      cut(node);
+      cascadingCut(node->parent);
+    }
+  }
+}
+
 //decreaseKey: public: reduces the value of a node by the specified amount, preserves heap ordering
 template <class T>
-void FibonacciHeap<T>::decreaseKey(FibonacciNode<T>* node, T decreaseAmt, bool toMin)
+bool FibonacciHeap<T>::decreaseKey(FibonacciNode<T>* node, T newKey)
 {
-  if (toMin)
-    node->value = MIN;
+  // if the new value does not decrease the key of the node
+  if (newKey > node->value)
+    return false;
   else
-    node->value -= decreaseAmt;
+  {
+    node->value = newKey;
 
-  // TODO: restore heap ordering, if violated
+    // if the heap order is violated and the node is not a member of the root list, restore the heap order
+    if (node->parent != nullptr && node->parent->value > node->value)
+    {
+      cut(node);
+      cascadingCut(node->parent);
+    }
+
+    if (node->value < smallest->value)
+      smallest = node;
+  }
 }
 
 template <class T>
 void FibonacciHeap<T>::Delete(FibonacciNode<T>* node)
 {
   // decrease key of node to MIN
-  decreaseKey(node, 0, true);
+  decreaseKey(node, MIN);
   // deleteMin()
 }
 
