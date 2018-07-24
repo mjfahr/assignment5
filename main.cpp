@@ -15,6 +15,8 @@ int main()
   h1.Insert(5);
   h1.Insert(7);
 
+  
+
 
   h1.print();
 

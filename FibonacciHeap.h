@@ -18,7 +18,7 @@ public:
   T peekMin() { return smallest->value; }
   void Insert(const T _value);
   void extractMin();
-  void decreaseKey(FibonacciNode<T>* node, T decreaseAmt, bool toMin = false);
+  bool decreaseKey(FibonacciNode<T>* node, T newKey);
   void Delete(FibonacciNode<T>* node);
 
   FibonacciHeap<T>* Merge(FibonacciHeap<T>* heap1, FibonacciHeap<T>* heap2);
@@ -31,6 +31,8 @@ private:
   void setSmallest();
   void addNode(FibonacciNode<T>* newNode);
   void printHelper(FibonacciNode<T>* root) const;
+  void cut(FibonacciNode<T>* ndoe);
+  void cascadingCut(FibonacciNode<T>* node);
 
   T MIN; // Smallest possible value for a node in the heap
   FibonacciNode<T>* smallest; // Equivalent to the 'head' node of a linked list. The root of this heap will be the smallest value in the fibonacci heap.
@@ -230,6 +232,8 @@ bool FibonacciHeap<T>::decreaseKey(FibonacciNode<T>* node, T newKey)
 
     if (node->value < smallest->value)
       smallest = node;
+
+    return true;
   }
 }
 
