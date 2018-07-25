@@ -13,6 +13,7 @@ class FibonacciHeap
 public:
   FibonacciHeap();
   FibonacciHeap(FibonacciNode<T>* node);
+  FibonacciHeap(const FibonacciHeap<T>& other); // TODO: Add copy constuctor
   ~FibonacciHeap();
 
   T peekMin() { return smallest->value; }
@@ -21,7 +22,10 @@ public:
   bool decreaseKey(FibonacciNode<T>* node, T newKey);
   void Delete(FibonacciNode<T>* node);
 
-  FibonacciHeap<T>* Merge(FibonacciHeap<T>* heap1, FibonacciHeap<T>* heap2);
+
+  FibonacciHeap<T> Merge(FibonacciHeap<T>& other);
+  FibonacciHeap<T> operator+(FibonacciHeap<T>& other) { return Merge(other); }
+  //FibonacciHeap<T> operator=(const FibonacciHeap<T>& other); // TODO: add "=" operator (may be necessary to properly use the merge operation)
 
   bool isEmpty() { return smallest == nullptr; }
   void print();
@@ -33,10 +37,11 @@ private:
   void printHelper(FibonacciNode<T>* root) const;
   void cut(FibonacciNode<T>* ndoe);
   void cascadingCut(FibonacciNode<T>* node);
+  void destructHelper(FibonacciNode<T>* node);
 
-  T MIN; // Smallest possible value for a node in the heap
   FibonacciNode<T>* smallest; // Equivalent to the 'head' node of a linked list. The root of this heap will be the smallest value in the fibonacci heap.
   int numNodes;
+  T MIN; // Smallest possible value for a node in the heap
 
 };
 
@@ -63,12 +68,38 @@ FibonacciHeap<T>::FibonacciHeap(FibonacciNode<T>* node)
 }
 
 template <class T>
-FibonacciHeap<T>::~FibonacciHeap()
+FibonacciHeap<T>::FibonacciHeap(const FibonacciHeap<T>& other)
 {
 
 }
 
-//Insert: Public: Allows for the easy ( O(1) ) insertion of a value by creating a new heap.
+template <class T>
+FibonacciHeap<T>::~FibonacciHeap()
+{
+  destructHelper(smallest);
+}
+
+// destructHelper: private: recusive helper function for destructor
+template <class T>
+void FibonacciHeap<T>::destructHelper(FibonacciNode<T>* node)
+{
+  FibonacciNode<T>* current = node;
+  FibonacciNode<T>* next = node;
+
+  if (current != nullptr)
+  {
+    do
+    {
+      current = next;
+      destructHelper(current->child);
+      next = current->right;
+      delete current;
+
+    } while(next != node);
+  }
+}
+
+//Insert: Public: Allows for the easy ( O(1) ) insertion of a value by adding a new heap to the root list.
 template <class T>
 void FibonacciHeap<T>::Insert(const T _value)
 {
@@ -77,7 +108,7 @@ void FibonacciHeap<T>::Insert(const T _value)
   addNode(newNode);
 }
 
-//addHeap: Private: Adds a new heap to the circular, doubly-linked list of heaps.
+//addHeap: Private: Adds a new heap to the root list.
 template <class T>
 void FibonacciHeap<T>::addNode(FibonacciNode<T>* newNode)
 {
@@ -116,12 +147,12 @@ void FibonacciHeap<T>::extractMin()
     if (smallest->child != nullptr)
     {
       FibonacciNode<T>* ptr = smallest->child;
-      FibonacciNode<T>* advance = smallest->child;
+      FibonacciNode<T>* next = smallest->child;
       do
       {
-        advance = ptr->right; // store the next child to be processed, as ptr->right will change in addNode(ptr).
+        next = ptr->right; // store the next child to be processed, as ptr->right will change in addNode(ptr).
         addNode(ptr);
-        ptr = advance;
+        ptr = next;
       } while(ptr != smallest->child);
     }
 
@@ -133,8 +164,9 @@ void FibonacciHeap<T>::extractMin()
 
       // delete smallest
       FibonacciNode<T>* toDel = smallest;
-      smallest = smallest->right; // set new smallest to be the right sibling of the current smallest (arbitrary choice)
+      smallest = smallest->right; // set new smallest to be the right sibling of the current smallest (arbitrary choice), will be changed later.
       delete toDel;
+
 
 
       // TODO: Consolidate nodes on the top level so that no two nodes have the same rank (# of children)
@@ -168,7 +200,7 @@ void FibonacciHeap<T>::setSmallest()
       if (ptr->value < smallest->value)
         smallest = ptr;
 
-        ptr = ptr->right;
+      ptr = ptr->right;
     }
   }
 }
@@ -245,24 +277,25 @@ void FibonacciHeap<T>::Delete(FibonacciNode<T>* node)
   // deleteMin()
 }
 
-//Merge: public: combines two fibonacci heaps into one by splicing together their top-level nodes. heap1 and heap2 are not deleted, but should not be used after calling this function.
+//Merge: public: combines two fibonacci heaps into one by splicing together their top-level nodes. the two heaps are not deleted, but should not be used after calling this function.
 // NOTE: Alternatively, we could create a copy constructor and create an entirely new heap containing the same node values.
 // This would reduce the likelihood of bugs occuring if the original heaps are reused, but it would be slower and less memory-efficient.
 template <class T>
-FibonacciHeap<T>* FibonacciHeap<T>::Merge(FibonacciHeap<T>* heap1, FibonacciHeap<T>* heap2)
+FibonacciHeap<T> FibonacciHeap<T>::Merge(FibonacciHeap<T>& other)
 {
   // Link the two heaps
-  heap1->smallest->right->left = heap2->smallest->left;
-  heap2->smallest->left->right = heap1->smallest->right;
+  smallest->right->left = other.smallest->left;
+  other.smallest->left->right = smallest->right;
 
-  heap1->smallest->right = heap2->smallest;
-  heap2->smallest->left = heap1->smallest;
+  smallest->right = other.smallest;
+  other.smallest->left = smallest;
 
   // Set the smallest node
-  heap1->smallest = (heap1->smallest <= heap2->smallest ? heap1->smallest : heap2->smallest);
+  smallest = (smallest->value <= other.smallest->value ? smallest : other.smallest);
 
-  return heap1;
+  return *this;
 }
+
 
 //getRank: private: return the number of children of a node.
 template <class T>
