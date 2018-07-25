@@ -23,6 +23,7 @@ public:
   void Delete(FibonacciNode<T>* node);
   void cut(FibonacciNode<T>* node);
   void cascadingCut(FibonacciNode<T>* node);
+  void addChild(FibonacciNode<T>* parent,FibonacciNode<T>* child);
 
   FibonacciHeap<T>* Merge(FibonacciHeap<T>* heap1, FibonacciHeap<T>* heap2);
 
@@ -107,6 +108,25 @@ void FibonacciHeap<T>::addNode(FibonacciNode<T>* newNode)
   numNodes++;
 }
 
+template <class T>
+void FibonacciHeap<T>::addChild(FibonacciNode<T>* _parent, FibonacciNode<T>* _child)
+{
+    if(_parent->child == nullptr)
+    {
+        _parent->child = _child;
+        _child->right = _child;
+        _child->left = _child;
+    }
+    else
+    {
+        _child->right = _parent->child->right;
+        _child->left = _parent->child;
+        _parent->child->right->left = _child;
+        _parent->child->right = _child;        
+    }
+}
+
+
 //deleteMin: Public: Removes the minimum value of the heap, a.k.a the root of 'smallest'. This removes ONLY the root, not the entire heap.
 template <class T>
 void FibonacciHeap<T>::extractMin()
@@ -164,7 +184,10 @@ void FibonacciHeap<T>::extractMin()
           //If move doesn't match ranks with anything, add it to the array at its
           //correct rank position
           if(ranks[move->rank] == NULL)
-              ranks[move->rank] == move;
+          {
+              ranks[move->rank] = move;
+              move = move->right;
+          }
           
           //If it does match
           else
@@ -172,39 +195,37 @@ void FibonacciHeap<T>::extractMin()
               //Find the greater value
               if(move->value > ranks[move->rank]->value)
               {
-                  //Updates parent
-                  move->parent = ranks[move->rank];
                   
-                  //Fixes left and right pointers
-                  ranks[move->rank]->right->left =  ranks[move->rank]->left;
-                  ranks[move->rank]->left->right =  ranks[move->rank]->right;
+                  ranks[move->rank]->left->right = ranks[move->rank]->right;
+                  ranks[move->rank]->right->left = ranks[move->rank]->left;
                   
-                  //Moves pointer to current position
-                  ranks[move->rank]->right = move->right;
+                  if(move->left == ranks[move->rank])
+                  {
+                      move->left = ranks[move->rank]->left;
+                  }
+                  else if(move->right == ranks[move->rank])
+                  {
+                      move->right = ranks[move->rank]->right;
+                  }
+                  
                   ranks[move->rank]->left = move->left;
-                  ranks[move->rank]->right->left = ranks[move->rank];
+                  ranks[move->rank]->right = move->right;
+                  
                   ranks[move->rank]->left->right = ranks[move->rank];
+                  ranks[move->rank]->right->left = ranks[move->rank];
                   
+                  move->left = nullptr;
+                  move->right = nullptr;
                   
-                  //If the node has no children, assign the smaller node as the
-                  //child
-                  if(ranks[move->rank]->child == NULL)
-                  {
-                      ranks[move->rank]->child = move;
-                      move->right = move;
-                      move->left = move;
-                  }
-                  //If it does have children, add the node to the right of the child
-                  //and properly reassign pointers to the left and right
-                  else
-                  {
-                      move->right = ranks[move->rank]->child->right;
-                      move->left = ranks[move->rank]->child;
-                      ranks[move->rank]->child->right->left = move;
-                      ranks[move->rank]->child->right = move;                      
-                  }
-                  //ranks[move->rank]->rank++;
+                  move->parent = ranks[move->rank];
+                          
+                  
+                  addChild(ranks[move->rank], move);
+                  
+
                   //Return back to the top level
+                  ranks[move->rank]->rank++;
+                  ranks[move->rank] = NULL;
                   move = move->parent;
                 }
               else
@@ -240,7 +261,6 @@ void FibonacciHeap<T>::extractMin()
                   }
               }
           }
-          move = move->right;
       } while(move != smallest->left);
           
 

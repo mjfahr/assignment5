@@ -15,7 +15,7 @@ int main()
   h1.print();
   
   h1.extractMin();
-
+  cout << endl;
 
   h1.print();
 
