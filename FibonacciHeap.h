@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <iostream>
+#include <vector>
 #include "FibonacciNode.h"
 
 using namespace std;
@@ -138,10 +139,113 @@ void FibonacciHeap<T>::extractMin()
 
 
       // TODO: Consolidate nodes on the top level so that no two nodes have the same rank (# of children)
-
+      setSmallest();
+      
+      int maxRank = smallest->rank;
+      FibonacciNode<T>* move = smallest->right;
+      
+      //Find max number rank needed for array
+      while(smallest != move)
+      {
+          if(move->rank > maxRank)
+              maxRank = move->rank;
+          move = move->right;
+      }
+      
+      FibonacciNode<T>** ranks = new FibonacciNode<T>*[5];
+      for(int i = 0; i <= 5; i++)
+        ranks[i] = NULL;
+      
+      ranks[smallest->rank] = smallest;
+      move = smallest->right;
+      do
+      {
+          
+          //If move doesn't match ranks with anything, add it to the array at its
+          //correct rank position
+          if(ranks[move->rank] == NULL)
+              ranks[move->rank] == move;
+          
+          //If it does match
+          else
+          {
+              //Find the greater value
+              if(move->value > ranks[move->rank]->value)
+              {
+                  //Updates parent
+                  move->parent = ranks[move->rank];
+                  
+                  //Fixes left and right pointers
+                  ranks[move->rank]->right->left =  ranks[move->rank]->left;
+                  ranks[move->rank]->left->right =  ranks[move->rank]->right;
+                  
+                  //Moves pointer to current position
+                  ranks[move->rank]->right = move->right;
+                  ranks[move->rank]->left = move->left;
+                  ranks[move->rank]->right->left = ranks[move->rank];
+                  ranks[move->rank]->left->right = ranks[move->rank];
+                  
+                  
+                  //If the node has no children, assign the smaller node as the
+                  //child
+                  if(ranks[move->rank]->child == NULL)
+                  {
+                      ranks[move->rank]->child = move;
+                      move->right = move;
+                      move->left = move;
+                  }
+                  //If it does have children, add the node to the right of the child
+                  //and properly reassign pointers to the left and right
+                  else
+                  {
+                      move->right = ranks[move->rank]->child->right;
+                      move->left = ranks[move->rank]->child;
+                      ranks[move->rank]->child->right->left = move;
+                      ranks[move->rank]->child->right = move;                      
+                  }
+                  //ranks[move->rank]->rank++;
+                  //Return back to the top level
+                  move = move->parent;
+                }
+              else
+              {
+                  
+                  //Updates parent
+                  ranks[move->rank]->parent = move;
+                  
+                  //Fixes left and right pointers
+                  ranks[move->rank]->right->left =  ranks[move->rank]->left;
+                  ranks[move->rank]->left->right =  ranks[move->rank]->right;
+                  
+                  
+                  //Moves pointer to current position
+                  ranks[move->rank]->right = move->right;
+                  ranks[move->rank]->left = move->left;
+                  
+                  //If the node has no children, assign the smaller node as the
+                  //child
+                  if(move->child == nullptr)
+                  {
+                      move->child = ranks[move->rank];
+                  }
+                  //If it does have children, add the node to the right of the child
+                  //and properly reassign pointers to the left and right
+                  else
+                  {
+                      ranks[move->rank]->right = move->child->right;
+                      ranks[move->rank]->left = move->child;
+                      move->child->right->left = ranks[move->rank];
+                      move->child->right = ranks[move->rank];
+                      
+                  }
+              }
+          }
+          move = move->right;
+      } while(move != smallest->left);
+          
 
       // find the new smallest node
-      setSmallest();
+      //setSmallest();
     }
     else
     {

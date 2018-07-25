@@ -12,6 +12,9 @@ int main()
   h1.Insert(10);
   h1.Insert(5);
   h1.Insert(7);
+  h1.print();
+  
+  h1.extractMin();
 
 
   h1.print();
