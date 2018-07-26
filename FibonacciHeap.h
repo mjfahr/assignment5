@@ -3,7 +3,6 @@
 
 #include <limits>
 #include <iostream>
-#include <vector>
 #include "FibonacciNode.h"
 
 using namespace std;
@@ -12,100 +11,131 @@ template <class T>
 class FibonacciHeap
 {
 public:
-  FibonacciHeap();
-  FibonacciHeap(FibonacciNode<T>* node);
-  ~FibonacciHeap();
+    FibonacciHeap();
+    FibonacciHeap(FibonacciNode<T>* node);
+    FibonacciHeap(const FibonacciHeap<T>& other); // TODO: Add copy constuctor
+    ~FibonacciHeap();
 
-  T peekMin() { return smallest->value; }
-  void Insert(const T _value);
-  void extractMin();
-  bool decreaseKey(FibonacciNode<T>* node, T newKey);
-  void Delete(FibonacciNode<T>* node);
-  void cut(FibonacciNode<T>* node);
-  void cascadingCut(FibonacciNode<T>* node);
-  void addChild(FibonacciNode<T>* parent,FibonacciNode<T>* child);
+    T peekMin() { return smallest->value; }
+    void Insert(const T _value);
+    void extractMin();
+    bool decreaseKey(FibonacciNode<T>* node, T newKey);
+    void Delete(FibonacciNode<T>* node);
+    void addChild(FibonacciNode<T>* _parent, FibonacciNode<T>* _child);
 
-  FibonacciHeap<T>* Merge(FibonacciHeap<T>* heap1, FibonacciHeap<T>* heap2);
 
-  bool isEmpty() { return smallest == nullptr; }
-  void print();
+    FibonacciHeap<T> Merge(FibonacciHeap<T>& other);
+    FibonacciHeap<T> operator+(FibonacciHeap<T>& other) { return Merge(other); }
+    //FibonacciHeap<T> operator=(const FibonacciHeap<T>& other); // TODO: add "=" operator (may be necessary to properly use the merge operation)
+
+    bool isEmpty() { return smallest == nullptr; }
+    void print();
 
 private:
-  int getRank(FibonacciNode<T>* node); // Number of children of a node (just immediate children
-  void setSmallest();
-  void addNode(FibonacciNode<T>* newNode);
-  void printHelper(FibonacciNode<T>* root) const;
+    int getRank(FibonacciNode<T>* node); // Number of children of a node (just immediate children
+    void setSmallest();
+    void addNode(FibonacciNode<T>* newNode);
+    void printHelper(FibonacciNode<T>* root) const;
+    void cut(FibonacciNode<T>* ndoe);
+    void cascadingCut(FibonacciNode<T>* node);
+    void destructHelper(FibonacciNode<T>* node);
 
-  T MIN; // Smallest possible value for a node in the heap
-  FibonacciNode<T>* smallest; // Equivalent to the 'head' node of a linked list. The root of this heap will be the smallest value in the fibonacci heap.
-  int numNodes;
+    FibonacciNode<T>* smallest; // Equivalent to the 'head' node of a linked list. The root of this heap will be the smallest value in the fibonacci heap.
+    int numNodes;
+    T MIN; // Smallest possible value for a node in the heap
 
 };
 
 template <class T>
 FibonacciHeap<T>::FibonacciHeap()
 {
-  smallest = nullptr;
-  numNodes = 0;
-  //Set the minimum possible value for any node (used to simplify code for deleting a node) NOTE: only works for numeric types
-  if (numeric_limits<T>::is_specialized)
-     MIN = numeric_limits<T>::lowest();
+    smallest = nullptr;
+    numNodes = 0;
+    //Set the minimum possible value for any node (used to simplify code for deleting a node) NOTE: only works for numeric types
+    if (numeric_limits<T>::is_specialized)
+        MIN = numeric_limits<T>::lowest();
 }
 
 template <class T>
 FibonacciHeap<T>::FibonacciHeap(FibonacciNode<T>* node)
 {
-  smallest = node;
-  smallest->right = node;
-  smallest->left = node;
-  numNodes = 1;
-  //Set the minimum possible value for any node (used to simplify code for deleting a node) NOTE: only works for numeric types
-  if (numeric_limits<T>::is_specialized)
-     MIN = numeric_limits<T>::lowest();
+    smallest = node;
+    smallest->right = node;
+    smallest->left = node;
+    numNodes = 1;
+    //Set the minimum possible value for any node (used to simplify code for deleting a node) NOTE: only works for numeric types
+    if (numeric_limits<T>::is_specialized)
+        MIN = numeric_limits<T>::lowest();
+}
+
+template <class T>
+FibonacciHeap<T>::FibonacciHeap(const FibonacciHeap<T>& other)
+{
+
 }
 
 template <class T>
 FibonacciHeap<T>::~FibonacciHeap()
 {
-
+    destructHelper(smallest);
 }
 
-//Insert: Public: Allows for the easy ( O(1) ) insertion of a value by creating a new heap.
+// destructHelper: private: recusive helper function for destructor
+template <class T>
+void FibonacciHeap<T>::destructHelper(FibonacciNode<T>* node)
+{
+    FibonacciNode<T>* current = node;
+    FibonacciNode<T>* next = node;
+
+    if (current != nullptr)
+    {
+        do
+        {
+            current = next;
+            destructHelper(current->child);
+            next = current->right;
+            delete current;
+
+        } while(next != node);
+    }
+}
+
+//Insert: Public: Allows for the easy ( O(1) ) insertion of a value by adding a new heap to the root list.
 template <class T>
 void FibonacciHeap<T>::Insert(const T _value)
 {
-  FibonacciNode<T>* newNode = new FibonacciNode<T>(_value);
-  // Insert the new node into the root list of the heap
-  addNode(newNode);
+    FibonacciNode<T>* newNode = new FibonacciNode<T>(_value);
+    // Insert the new node into the root list of the heap
+    addNode(newNode);
 }
 
-//addHeap: Private: Adds a new heap to the circular, doubly-linked list of heaps.
+//addHeap: Private: Adds a new heap to the root list.
 template <class T>
 void FibonacciHeap<T>::addNode(FibonacciNode<T>* newNode)
 {
-  if (!isEmpty())
-  {
-    // Insert new heap into list, to the right of smallest (arbitrary choice)
-    newNode->right = smallest->right;
-    newNode->left = smallest;
+    if (!isEmpty())
+    {
+        // Insert new heap into list, to the right of smallest (arbitrary choice)
+        newNode->right = smallest->right;
+        newNode->left = smallest;
 
-    newNode->right->left = newNode;
-    smallest->right = newNode;
+        newNode->right->left = newNode;
+        smallest->right = newNode;
 
-    newNode->parent = nullptr;
+        newNode->parent = nullptr;
 
-    // Move smallest pointer if necessary
-    if (smallest->value > newNode->value)
-      smallest = newNode;
-  }
-  else // Fibonacci heap is empty, first value is the smallest.
-  {
-    smallest = newNode;
-    // Create circular linking
-    smallest->right = smallest;
-    smallest->left = smallest;
-  }
-  numNodes++;
+        // Move smallest pointer if necessary
+        if (smallest->value > newNode->value)
+            smallest = newNode;
+    }
+    else // Fibonacci heap is empty, first value is the smallest.
+    {
+        smallest = newNode;
+        // Create circular linking
+        smallest->right = smallest;
+        smallest->left = smallest;
+    }
+    numNodes++;
 }
 
 template <class T>
@@ -122,7 +152,7 @@ void FibonacciHeap<T>::addChild(FibonacciNode<T>* _parent, FibonacciNode<T>* _ch
         _child->right = _parent->child->right;
         _child->left = _parent->child;
         _parent->child->right->left = _child;
-        _parent->child->right = _child;        
+        _parent->child->right = _child;
     }
 }
 
@@ -131,149 +161,147 @@ void FibonacciHeap<T>::addChild(FibonacciNode<T>* _parent, FibonacciNode<T>* _ch
 template <class T>
 void FibonacciHeap<T>::extractMin()
 {
-  if (!isEmpty())
-  {
-    // Add smallest's children to the top level of the heap
-    if (smallest->child != nullptr)
+    if (!isEmpty())
     {
-      FibonacciNode<T>* ptr = smallest->child;
-      FibonacciNode<T>* advance = smallest->child;
-      do
-      {
-        advance = ptr->right; // store the next child to be processed, as ptr->right will change in addNode(ptr).
-        addNode(ptr);
-        ptr = advance;
-      } while(ptr != smallest->child);
-    }
+        // Add smallest's children to the top level of the heap
+        if (smallest->child != nullptr)
+        {
+            FibonacciNode<T>* ptr = smallest->child;
+            FibonacciNode<T>* next = smallest->child;
+            do
+            {
+                next = ptr->right; // store the next child to be processed, as ptr->right will change in addNode(ptr).
+                addNode(ptr);
+                ptr = next;
+            } while(ptr != smallest->child);
+        }
 
-    // Remove smallest from the heap and reconnect doubly linked list
-    if (smallest != smallest->right) // smallest is not the only node
-    {
-      smallest->left->right = smallest->right;
-      smallest->right->left = smallest->left;
+        // Remove smallest from the heap and reconnect doubly linked list
+        if (smallest != smallest->right) // smallest is not the only node
+        {
+            smallest->left->right = smallest->right;
+            smallest->right->left = smallest->left;
 
-      // delete smallest
-      FibonacciNode<T>* toDel = smallest;
-      smallest = smallest->right; // set new smallest to be the right sibling of the current smallest (arbitrary choice)
-      delete toDel;
+            // delete smallest
+            FibonacciNode<T>* toDel = smallest;
+            smallest = smallest->right; // set new smallest to be the right sibling of the current smallest (arbitrary choice), will be changed later.
+            delete toDel;
 
 
-      // TODO: Consolidate nodes on the top level so that no two nodes have the same rank (# of children)
-      setSmallest();
-      
-      int maxRank = smallest->rank;
-      FibonacciNode<T>* move = smallest->right;
-      
-      //Find max number rank needed for array
-      while(smallest != move)
-      {
-          if(move->rank > maxRank)
-              maxRank = move->rank;
-          move = move->right;
-      }
-      
-      FibonacciNode<T>** ranks = new FibonacciNode<T>*[5];
-      for(int i = 0; i <= 5; i++)
-        ranks[i] = NULL;
-      
-      ranks[smallest->rank] = smallest;
-      move = smallest->right;
-      do
-      {
-          
-          //If move doesn't match ranks with anything, add it to the array at its
-          //correct rank position
-          if(ranks[move->rank] == NULL)
-          {
-              ranks[move->rank] = move;
-              move = move->right;
-          }
-          
-          //If it does match
-          else
-          {
-              //Find the greater value
-              if(move->value > ranks[move->rank]->value)
-              {
-                  
-                  ranks[move->rank]->left->right = ranks[move->rank]->right;
-                  ranks[move->rank]->right->left = ranks[move->rank]->left;
-                  
-                  if(move->left == ranks[move->rank])
-                  {
-                      move->left = ranks[move->rank]->left;
-                  }
-                  else if(move->right == ranks[move->rank])
-                  {
-                      move->right = ranks[move->rank]->right;
-                  }
-                  
-                  ranks[move->rank]->left = move->left;
-                  ranks[move->rank]->right = move->right;
-                  
-                  ranks[move->rank]->left->right = ranks[move->rank];
-                  ranks[move->rank]->right->left = ranks[move->rank];
-                  
-                  move->left = nullptr;
-                  move->right = nullptr;
-                  
-                  move->parent = ranks[move->rank];
-                          
-                  
-                  addChild(ranks[move->rank], move);
-                  
 
-                  //Return back to the top level
-                  ranks[move->rank]->rank++;
-                  ranks[move->rank] = NULL;
-                  move = move->parent;
+            //Consolidate nodes on the top level so that no two nodes have the same rank (# of children)
+            setSmallest();
+
+            int maxRank = smallest->rank;
+            FibonacciNode<T>* move = smallest->right;
+
+            //Find max number rank needed for array
+            while(smallest != move)
+            {
+                if(move->rank > maxRank)
+                    maxRank = move->rank;
+                move = move->right;
+            }
+
+            FibonacciNode<T>** ranks = new FibonacciNode<T>*[5];
+            for(int i = 0; i <= 5; i++)
+                ranks[i] = NULL;
+
+            ranks[smallest->rank] = smallest;
+            bool flag = false;
+
+
+            move = smallest->right;
+            do
+            {
+
+                //If move doesn't match ranks with anything, add it to the array at its
+                //correct rank position
+                if(ranks[move->rank] == NULL)
+                {
+                    ranks[move->rank] = move;
+                    move = move->right;
                 }
-              else
-              {
-                  
-                  //Updates parent
-                  ranks[move->rank]->parent = move;
-                  
-                  //Fixes left and right pointers
-                  ranks[move->rank]->right->left =  ranks[move->rank]->left;
-                  ranks[move->rank]->left->right =  ranks[move->rank]->right;
-                  
-                  
-                  //Moves pointer to current position
-                  ranks[move->rank]->right = move->right;
-                  ranks[move->rank]->left = move->left;
-                  
-                  //If the node has no children, assign the smaller node as the
-                  //child
-                  if(move->child == nullptr)
-                  {
-                      move->child = ranks[move->rank];
-                  }
-                  //If it does have children, add the node to the right of the child
-                  //and properly reassign pointers to the left and right
-                  else
-                  {
-                      ranks[move->rank]->right = move->child->right;
-                      ranks[move->rank]->left = move->child;
-                      move->child->right->left = ranks[move->rank];
-                      move->child->right = ranks[move->rank];
-                      
-                  }
-              }
-          }
-      } while(move != smallest->left);
-          
 
-      // find the new smallest node
-      //setSmallest();
+                    //If it does match
+                else
+                {
+                    //Find the greater value
+                    if(move->value > ranks[move->rank]->value)
+                    {
+                        //Removes node with same rank from Heap
+                        ranks[move->rank]->left->right = ranks[move->rank]->right;
+                        ranks[move->rank]->right->left = ranks[move->rank]->left;
+
+                        //If the nodes are beside each other, make sure they don't
+                        //connect to each other
+                        //Possibly can remove
+                        if(move->left == ranks[move->rank])
+                        {
+                            move->left = ranks[move->rank]->left;
+                        }
+                        else if(move->right == ranks[move->rank])
+                        {
+                            move->right = ranks[move->rank]->right;
+                        }
+
+                        //Moves node with same rank to position of move and updates
+                        //pointers around it
+                        ranks[move->rank]->left = move->left;
+                        ranks[move->rank]->right = move->right;
+                        ranks[move->rank]->left->right = ranks[move->rank];
+                        ranks[move->rank]->right->left = ranks[move->rank];
+
+                        //Clears left and right since no pointers are beside it
+                        move->left = nullptr;
+                        move->right = nullptr;
+
+                        //Adds smaller valued node as parent
+                        move->parent = ranks[move->rank];
+
+                        //Adds child to smaller node
+                        addChild(ranks[move->rank], move);
+
+
+                        //Return back to the top level
+                        ranks[move->rank]->rank++;
+                        ranks[move->rank] = NULL;
+                        move = move->parent;
+                    }
+                    else
+                    {
+                        //Removes node with same rank from Heap
+                        ranks[move->rank]->left->right = ranks[move->rank]->right;
+                        ranks[move->rank]->right->left = ranks[move->rank]->left;
+
+                        ranks[move->rank]->left = nullptr;
+                        ranks[move->rank]->right = nullptr;
+
+                        ranks[move->rank]->parent = move;
+                        addChild(move, ranks[move->rank]);
+
+                        move->rank++;
+                        ranks[move->rank] = NULL;
+
+                    }
+                }
+
+
+                if(move == smallest->left)
+                    flag = true;
+
+
+
+            } while(move != smallest->right || flag == false || ranks[smallest->rank] != smallest);
+            //delete []ranks;
+        }
+        else
+        {
+            delete smallest;
+            smallest = nullptr;
+        }
+        numNodes--;
     }
-    else
-    {
-      delete smallest;
-      smallest = nullptr;
-    }
-    numNodes--;
-  }
 }
 
 
@@ -282,161 +310,164 @@ template <class T>
 void FibonacciHeap<T>::setSmallest()
 {
 
-  if (!isEmpty())
-  {
-    FibonacciNode<T>* ptr = smallest->right;
-    FibonacciNode<T>* init = smallest; // Used to keep track of where we started, since smallest will change.
-
-    while (ptr != init)
+    if (!isEmpty())
     {
-      if (ptr->value < smallest->value)
-        smallest = ptr;
+        FibonacciNode<T>* ptr = smallest->right;
+        FibonacciNode<T>* init = smallest; // Used to keep track of where we started, since smallest will change.
 
-        ptr = ptr->right;
+        while (ptr != init)
+        {
+            if (ptr->value < smallest->value)
+                smallest = ptr;
+
+            ptr = ptr->right;
+        }
     }
-  }
 }
 
 template <class T>
 void FibonacciHeap<T>::cut(FibonacciNode<T>* node)
 {
-  // If the child has siblings
-  if (node->right != node)
-  {
-    //reconnect the circular list of siblings
-    node->left->right = node->right;
-    node->right->left = node->left;
+    // If the child has siblings
+    if (node->right != node)
+    {
+        //reconnect the circular list of siblings
+        node->left->right = node->right;
+        node->right->left = node->left;
 
 
-    // if the parent of node points to node as a child, change the child pointer
-    if (node->parent->child == node)
-      node->parent->child = node->right;
-  }
+        // if the parent of node points to node as a child, change the child pointer
+        if (node->parent->child == node)
+            node->parent->child = node->right;
+    }
 
-  // decrease the degree/rank of the parent, since we removed a child
-  node->parent->rank--;
-  node->marked = false;
+    // decrease the degree/rank of the parent, since we removed a child
+    node->parent->rank--;
+    node->marked = false;
 
-  addNode(node);
+    addNode(node);
 
 }
 
 template <class T>
 void FibonacciHeap<T>::cascadingCut(FibonacciNode<T>* node)
 {
-  if (node->parent != nullptr)
-  {
-    if (node->parent->marked == false)
-      node->parent->marked = true;
-    else
+    if (node->parent != nullptr)
     {
-      cut(node);
-      cascadingCut(node->parent);
+        if (node->parent->marked == false)
+            node->parent->marked = true;
+        else
+        {
+            cut(node);
+            cascadingCut(node->parent);
+        }
     }
-  }
 }
 
 //decreaseKey: public: reduces the value of a node by the specified amount, preserves heap ordering
 template <class T>
 bool FibonacciHeap<T>::decreaseKey(FibonacciNode<T>* node, T newKey)
 {
-  // if the new value does not decrease the key of the node
-  if (newKey > node->value)
-    return false;
-  else
-  {
-    node->value = newKey;
-
-    // if the heap order is violated and the node is not a member of the root list, restore the heap order
-    if (node->parent != nullptr && node->parent->value > node->value)
+    // if the new value does not decrease the key of the node
+    if (newKey > node->value)
+        return false;
+    else
     {
-      cut(node);
-      cascadingCut(node->parent);
-    }
+        node->value = newKey;
 
-    if (node->value < smallest->value)
-      smallest = node;
-  }
+        // if the heap order is violated and the node is not a member of the root list, restore the heap order
+        if (node->parent != nullptr && node->parent->value > node->value)
+        {
+            cut(node);
+            cascadingCut(node->parent);
+        }
+
+        if (node->value < smallest->value)
+            smallest = node;
+
+        return true;
+    }
 }
 
 template <class T>
 void FibonacciHeap<T>::Delete(FibonacciNode<T>* node)
 {
-  // decrease key of node to MIN
-  decreaseKey(node, MIN);
-  // deleteMin()
+    // decrease key of node to MIN
+    decreaseKey(node, MIN);
+    // deleteMin()
 }
 
-//Merge: public: combines two fibonacci heaps into one by splicing together their top-level nodes. heap1 and heap2 are not deleted, but should not be used after calling this function.
+//Merge: public: combines two fibonacci heaps into one by splicing together their top-level nodes. the two heaps are not deleted, but should not be used after calling this function.
 // NOTE: Alternatively, we could create a copy constructor and create an entirely new heap containing the same node values.
 // This would reduce the likelihood of bugs occuring if the original heaps are reused, but it would be slower and less memory-efficient.
 template <class T>
-FibonacciHeap<T>* FibonacciHeap<T>::Merge(FibonacciHeap<T>* heap1, FibonacciHeap<T>* heap2)
+FibonacciHeap<T> FibonacciHeap<T>::Merge(FibonacciHeap<T>& other)
 {
-  // Link the two heaps
-  heap1->smallest->right->left = heap2->smallest->left;
-  heap2->smallest->left->right = heap1->smallest->right;
+    // Link the two heaps
+    smallest->right->left = other.smallest->left;
+    other.smallest->left->right = smallest->right;
 
-  heap1->smallest->right = heap2->smallest;
-  heap2->smallest->left = heap1->smallest;
+    smallest->right = other.smallest;
+    other.smallest->left = smallest;
 
-  // Set the smallest node
-  heap1->smallest = (heap1->smallest <= heap2->smallest ? heap1->smallest : heap2->smallest);
+    // Set the smallest node
+    smallest = (smallest->value <= other.smallest->value ? smallest : other.smallest);
 
-  return heap1;
+    return *this;
 }
+
 
 //getRank: private: return the number of children of a node.
 template <class T>
 int FibonacciHeap<T>::getRank(FibonacciNode<T>* node)
 {
-  int rank = 0;
-  FibonacciNode<T>* init = node->child;
+    int rank = 0;
+    FibonacciNode<T>* init = node->child;
 
-  if (init != nullptr)
-  {
-    FibonacciNode<T>* ptr = init->right;
-    rank++;
-
-    while (ptr != init)
+    if (init != nullptr)
     {
-      rank++;
-      ptr = ptr->right;
-    }
-  }
+        FibonacciNode<T>* ptr = init->right;
+        rank++;
 
-  return rank;
+        while (ptr != init)
+        {
+            rank++;
+            ptr = ptr->right;
+        }
+    }
+
+    return rank;
 }
 
 template <class T>
 void FibonacciHeap<T>::print()
 {
-  FibonacciNode<T>* ptr1 = smallest;
-  do
-  {
-    printHelper(ptr1);
-    cout << endl;
-    ptr1 = ptr1->right;
+    FibonacciNode<T>* ptr1 = smallest;
+    do
+    {
+        printHelper(ptr1);
+        cout << endl;
+        ptr1 = ptr1->right;
 
-  } while(ptr1 != smallest);
+    } while(ptr1 != smallest);
 
 }
 
 template <class T>
 void FibonacciHeap<T>::printHelper(FibonacciNode<T>* root) const
 {
-  cout << root->value << " ";
+    cout << root->value << " ";
 
-  if (root->child != nullptr)
-  {
-    FibonacciNode<T>* ptr2 = root->child;
-
-    do
+    if (root->child != nullptr)
     {
-      printHelper(ptr2);
-      ptr2 = ptr2->right;
-    } while(ptr2 != root->child);
-  }
+        FibonacciNode<T>* ptr2 = root->child;
+
+        do
+        {
+            printHelper(ptr2);
+            ptr2 = ptr2->right;
+        } while(ptr2 != root->child);
+    }
 }
 
 
