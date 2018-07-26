@@ -15,8 +15,30 @@ int main()
   h1.print();
   
   h1.extractMin();
+  
   cout << endl;
+  h1.print();
+  
+  h1.Insert(1);
+  h1.Insert(12);
+  
+  cout << endl;
+  h1.print();
+  
+  h1.extractMin();
+  
+  cout << endl;
+  h1.print();
 
+  h1.Insert(22);
+  h1.Insert(33);
+
+  cout << endl;
+  h1.print();
+
+  h1.extractMin();
+
+  cout << endl;
   h1.print();
 
 
