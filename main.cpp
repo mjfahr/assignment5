@@ -29,9 +29,14 @@ int main()
   h2.print();
   cout << "h2: Smallest: " << h2.peekMin() << endl;
 
-  //Merge is not working, for some unknown reason
-  // FibonacciHeap<int> h3 = h1.Merge(h2);
-  // h3.print();
+  FibonacciHeap<int> h3 = h1 + h2;
+  cout << "h3: " << endl;
+  h3.print();
+
+
+  FibonacciHeap<int> h4 = h1;
+  cout << "h4: " << endl;
+  h4.print();
   // cout << "h3: Smallest: " << h3.peekMin() << endl;
 
 

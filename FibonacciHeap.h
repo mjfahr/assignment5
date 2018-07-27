@@ -23,9 +23,9 @@ public:
   void Delete(FibonacciNode<T>* node);
 
 
-  FibonacciHeap<T> Merge(FibonacciHeap<T>& other);
-  FibonacciHeap<T> operator+(FibonacciHeap<T>& other) { return Merge(other); }
-  //FibonacciHeap<T> operator=(const FibonacciHeap<T>& other); // TODO: add "=" operator (may be necessary to properly use the merge operation)
+  static FibonacciHeap<T> Merge(const FibonacciHeap<T>& one, const FibonacciHeap<T>& other);
+  FibonacciHeap<T> operator+(FibonacciHeap<T>& other) { return Merge(*this, other); }
+  FibonacciHeap<T> operator=(const FibonacciHeap<T>& other) { return new FibonacciHeap<T>(other); }
 
   bool isEmpty() { return smallest == nullptr; }
   void print();
@@ -35,6 +35,7 @@ private:
   void setSmallest();
   void addNode(FibonacciNode<T>* newNode);
   void printHelper(FibonacciNode<T>* root) const;
+  void copyHelper(FibonacciNode<T>* node);
   void cut(FibonacciNode<T>* ndoe);
   void cascadingCut(FibonacciNode<T>* node);
   void destructHelper(FibonacciNode<T>* node);
@@ -67,10 +68,36 @@ FibonacciHeap<T>::FibonacciHeap(FibonacciNode<T>* node)
      MIN = numeric_limits<T>::lowest();
 }
 
+//copy constructor: creates a copy by appending all nodes in other heap to root list of new heap. Does not preserve heap topology.
 template <class T>
 FibonacciHeap<T>::FibonacciHeap(const FibonacciHeap<T>& other)
 {
+  smallest = nullptr;
+  numNodes = 0;
+  if (numeric_limits<T>::is_specialized)
+     MIN = numeric_limits<T>::lowest();
 
+  copyHelper(other.smallest);
+}
+
+template <class T>
+void FibonacciHeap<T>::copyHelper(FibonacciNode<T>* node)
+{
+  if (node != nullptr)
+  {
+    FibonacciNode<T>* ptr = node;
+    const FibonacciNode<T>* init = ptr;
+
+    do
+    {
+      Insert(ptr->value);
+
+      copyHelper(ptr->child);
+
+      ptr = ptr->right;
+
+    } while(ptr != init);
+  }
 }
 
 template <class T>
@@ -120,8 +147,6 @@ void FibonacciHeap<T>::addNode(FibonacciNode<T>* newNode)
 
     newNode->right->left = newNode;
     smallest->right = newNode;
-
-    newNode->parent = nullptr;
 
     // Move smallest pointer if necessary
     if (smallest->value > newNode->value)
@@ -281,19 +306,21 @@ void FibonacciHeap<T>::Delete(FibonacciNode<T>* node)
 // NOTE: Alternatively, we could create a copy constructor and create an entirely new heap containing the same node values.
 // This would reduce the likelihood of bugs occuring if the original heaps are reused, but it would be slower and less memory-efficient.
 template <class T>
-FibonacciHeap<T> FibonacciHeap<T>::Merge(FibonacciHeap<T>& other)
+FibonacciHeap<T> FibonacciHeap<T>::Merge(const FibonacciHeap<T>& one, const FibonacciHeap<T>& other)
 {
+  FibonacciHeap<T>* first = new FibonacciHeap<T>(one);
+  FibonacciHeap<T>* second = new FibonacciHeap<T>(other);
   // Link the two heaps
-  smallest->right->left = other.smallest->left;
-  other.smallest->left->right = smallest->right;
+  first->smallest->right->left = second->smallest->left;
+  second->smallest->left->right = first->smallest->right;
 
-  smallest->right = other.smallest;
-  other.smallest->left = smallest;
+  first->smallest->right = second->smallest;
+  second->smallest->left = first->smallest;
 
   // Set the smallest node
-  smallest = (smallest->value <= other.smallest->value ? smallest : other.smallest);
+  first->smallest = (first->smallest->value <= second->smallest->value ? first->smallest : second->smallest);
 
-  return *this;
+  return *first;
 }
 
 
