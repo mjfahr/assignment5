@@ -1,10 +1,6 @@
-
-
 #include "FibonacciHeap.h"
 
 using namespace std;
-
-
 
 int main()
 {
@@ -37,10 +33,13 @@ int main()
   FibonacciHeap<int> h4 = h1;
   cout << "h4: " << endl;
   h4.print();
-  // cout << "h3: Smallest: " << h3.peekMin() << endl;
+  cout << endl;
+
+  FibonacciNode<int>* n1 = h1.getNode(5);
+  h1.decreaseKey(n1, 2);
+  cout << h1.peekMin() << endl;
 
 
-  //h1.decreaseKey();
 
   //h1.deleteMin();
 

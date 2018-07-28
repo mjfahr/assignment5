@@ -13,7 +13,7 @@ class FibonacciHeap
 public:
   FibonacciHeap();
   FibonacciHeap(FibonacciNode<T>* node);
-  FibonacciHeap(const FibonacciHeap<T>& other); // TODO: Add copy constuctor
+  FibonacciHeap(const FibonacciHeap<T>& other);
   ~FibonacciHeap();
 
   T peekMin() { return smallest->value; }
@@ -21,7 +21,7 @@ public:
   void extractMin();
   bool decreaseKey(FibonacciNode<T>* node, T newKey);
   void Delete(FibonacciNode<T>* node);
-
+  FibonacciNode<T>* getNode(const T _value);
 
   static FibonacciHeap<T> Merge(const FibonacciHeap<T>& one, const FibonacciHeap<T>& other);
   FibonacciHeap<T> operator+(FibonacciHeap<T>& other) { return Merge(*this, other); }
@@ -31,14 +31,16 @@ public:
   void print();
 
 private:
-  int getRank(FibonacciNode<T>* node); // Number of children of a node (just immediate children
+  void copyHelper(FibonacciNode<T>* node);
+  void destructHelper(FibonacciNode<T>* node);
+  void printHelper(FibonacciNode<T>* root) const;
+  FibonacciNode<T>* getNodeHelper(const T _value, FibonacciNode<T>* node);
+
+  int getRank(FibonacciNode<T>* node); // Number of children of a node (just immediate children)
   void setSmallest();
   void addNode(FibonacciNode<T>* newNode);
-  void printHelper(FibonacciNode<T>* root) const;
-  void copyHelper(FibonacciNode<T>* node);
   void cut(FibonacciNode<T>* ndoe);
   void cascadingCut(FibonacciNode<T>* node);
-  void destructHelper(FibonacciNode<T>* node);
 
   FibonacciNode<T>* smallest; // Equivalent to the 'head' node of a linked list. The root of this heap will be the smallest value in the fibonacci heap.
   int numNodes;
@@ -207,6 +209,41 @@ void FibonacciHeap<T>::extractMin()
     }
     numNodes--;
   }
+}
+
+//getNode: public: returns a pointer to a node in the heap, for use in the decreaseKey and delete functions.
+template <class T>
+FibonacciNode<T>* FibonacciHeap<T>::getNode(const T _value)
+{
+  return getNodeHelper(_value, smallest);
+}
+
+template <class T>
+FibonacciNode<T>* FibonacciHeap<T>::getNodeHelper(const T _value, FibonacciNode<T>* node)
+{
+  if (node != nullptr)
+  {
+    FibonacciNode<T>* ptr = node;
+    const FibonacciNode<T>* init = ptr;
+
+    do
+    {
+      if (ptr->value == _value)
+        return ptr;
+
+      else
+      {
+        FibonacciNode<T>* res = getNodeHelper(_value, ptr->child);
+
+        if (res != nullptr)
+          return res;
+
+        ptr = ptr->right;
+      }
+
+    } while(ptr != init);
+  }
+  return nullptr;
 }
 
 

@@ -6,20 +6,20 @@ template <class T>
 class FibonacciNode
 {
 public:
-  FibonacciNode() {marked = false;
-              parent = nullptr;
-              child = nullptr;
-              left = nullptr;
-              right = nullptr;
-              rank = 0; }
+  FibonacciNode() { marked = false;
+                    parent = nullptr;
+                    child = nullptr;
+                    left = nullptr;
+                    right = nullptr;
+                    rank = 0; }
 
   FibonacciNode(T _value) { marked = false;
-                       value = _value;
-                       parent = nullptr;
-                       child = nullptr;
-                       left = nullptr;
-                       right = nullptr;
-                       rank = 0; }
+                            value = _value;
+                            parent = nullptr;
+                            child = nullptr;
+                            left = nullptr;
+                            right = nullptr;
+                            rank = 0; }
 
 
   T value;
