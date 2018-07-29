@@ -1,5 +1,5 @@
-# assignment5
-Implementation of Fibonacci Heap
+# Fibonacci Heap (C++)
+Implementation of Fibonacci Heap for Assignment 5 of CSCE 2014
 
 The Fibonacci Heap is a min-heap data structure that attempts to provide O(1)
 amortized 'insert', 'min-access', and 'decrease_key' operations, as well as amortized
