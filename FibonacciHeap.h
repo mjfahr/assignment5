@@ -1,5 +1,22 @@
-#ifndef FIBONACCI_HEAP_H
-#define FIBONACCI_HEAP_H
+/*
+Copyright (C) 2018  Michael Fahr, Adam Goertz, Alec Ray
+
+This program is free software: you may redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+any later version.
+
+This program is distributed in the hope that it will be useful,
+but without any guarantee of its fitness for any particular purpose. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+*/
+
+#ifndef FIBONACCIHEAP_H
+#define FIBONACCIHEAP_H
 
 #include <limits>
 #include <iostream>
@@ -16,12 +33,14 @@ public:
   FibonacciHeap(const FibonacciHeap<T>& other);
   ~FibonacciHeap();
 
-  T peekMin() { return smallest->value; }
   void Insert(const T _value);
+
+  T peekMin() { return smallest->value; }
   void extractMin();
+  FibonacciNode<T>* getNode(const T _value);
+
   bool decreaseKey(FibonacciNode<T>* node, T newKey);
   void Delete(FibonacciNode<T>* node);
-  FibonacciNode<T>* getNode(const T _value);
 
   static FibonacciHeap<T> Merge(const FibonacciHeap<T>& one, const FibonacciHeap<T>& other);
   FibonacciHeap<T> operator+(FibonacciHeap<T>& other) { return Merge(*this, other); }
@@ -36,15 +55,16 @@ private:
   void printHelper(FibonacciNode<T>* root) const;
   FibonacciNode<T>* getNodeHelper(const T _value, FibonacciNode<T>* node);
 
-  int getRank(FibonacciNode<T>* node); // Number of children of a node (just immediate children)
+  int getRank(FibonacciNode<T>* node);
   void setSmallest();
   void addNode(FibonacciNode<T>* newNode);
+
   void cut(FibonacciNode<T>* ndoe);
   void cascadingCut(FibonacciNode<T>* node);
 
-  FibonacciNode<T>* smallest; // Equivalent to the 'head' node of a linked list. The root of this heap will be the smallest value in the fibonacci heap.
+  FibonacciNode<T>* smallest;
   int numNodes;
-  T MIN; // Smallest possible value for a node in the heap
+  T MIN; // Smallest possible value for a node in the heap, generally defined for numeric types only.
 
 };
 
