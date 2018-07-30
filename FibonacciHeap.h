@@ -40,6 +40,7 @@ public:
 
   bool decreaseKey(FibonacciNode<T>* node, T newKey);
   void Delete(FibonacciNode<T>* node);
+  void addChild(FibonacciNode<T>* _parent, FibonacciNode<T>* _child);
 
   static FibonacciHeap<T> Merge(FibonacciHeap<T>& one, FibonacciHeap<T>& other);
   FibonacciHeap<T> operator+(FibonacciHeap<T>& other) { return Merge(*this, other); }
@@ -182,6 +183,24 @@ void FibonacciHeap<T>::addNode(FibonacciNode<T>* newNode)
   numNodes++;
 }
 
+template <class T>
+void FibonacciHeap<T>::addChild(FibonacciNode<T>* _parent, FibonacciNode<T>* _child)
+{
+    if(_parent->child == nullptr)
+    {
+        _parent->child = _child;
+        _child->right = _child;
+        _child->left = _child;
+    }
+    else
+    {
+        _child->right = _parent->child->right;
+        _child->left = _parent->child;
+        _parent->child->right->left = _child;
+        _parent->child->right = _child;
+    }
+}
+
 //deleteMin: Public: Removes the minimum value of the heap, a.k.a the root of 'smallest'. This removes ONLY the root, not the entire heap.
 template <class T>
 void FibonacciHeap<T>::extractMin()
@@ -215,10 +234,92 @@ void FibonacciHeap<T>::extractMin()
 
 
       // TODO: Consolidate nodes on the top level so that no two nodes have the same rank (# of children)
+      FibonacciNode<T>* move;
+      FibonacciNode<T>** ranks = new FibonacciNode<T>*[numNodes];
+      for(int i = 0; i <= 5; i++)
+          ranks[i] = NULL;
 
+      ranks[smallest->rank] = smallest;
+      bool flag = false;
+
+
+      move = smallest->right;
+      do
+      {
+
+          //If move doesn't match ranks with anything, add it to the array at its
+          //correct rank position
+          if(ranks[move->rank] == NULL)
+          {
+              ranks[move->rank] = move;
+              move = move->right;
+          }
+
+              //If it does match
+          else
+          {
+              //Find the greater value
+              if(move->value > ranks[move->rank]->value)
+              {
+                  //Removes node with same rank from Heap
+                  ranks[move->rank]->left->right = ranks[move->rank]->right;
+                  ranks[move->rank]->right->left = ranks[move->rank]->left;
+
+                  //Moves node with same rank to position of move and updates
+                  //pointers around it
+                  ranks[move->rank]->left = move->left;
+                  ranks[move->rank]->right = move->right;
+                  ranks[move->rank]->left->right = ranks[move->rank];
+                  ranks[move->rank]->right->left = ranks[move->rank];
+
+                  //Clears left and right since no pointers are beside it
+                  move->left = nullptr;
+                  move->right = nullptr;
+
+                  //Adds smaller valued node as parent
+                  move->parent = ranks[move->rank];
+
+                  //Adds child to smaller node
+                  addChild(ranks[move->rank], move);
+
+
+                  //Return back to the top level
+                  ranks[move->rank]->rank++;
+                  ranks[move->rank] = NULL;
+                  move = move->parent;
+              }
+              else
+              {
+                  //Removes node with same rank from Heap
+                  ranks[move->rank]->left->right = ranks[move->rank]->right;
+                  ranks[move->rank]->right->left = ranks[move->rank]->left;
+
+                  ranks[move->rank]->left = nullptr;
+                  ranks[move->rank]->right = nullptr;
+
+                  ranks[move->rank]->parent = move;
+                  addChild(move, ranks[move->rank]);
+
+                  move->rank++;
+                  ranks[move->rank] = NULL;
+
+              }
+          }
+
+
+          if(move == smallest->left)
+              flag = true;
+
+
+
+      } while(move != smallest->right || flag == false || ranks[smallest->rank] != smallest);
+      //delete []ranks;
 
       // find the new smallest node
       setSmallest();
+
+
+
     }
     else
     {
