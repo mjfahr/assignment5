@@ -26,7 +26,7 @@ int main()
   string fileName;
   ifstream din;
 
-  while(choice != 5)
+  while(choice != 6)
   {
     printMenu();
     cin >> choice;
