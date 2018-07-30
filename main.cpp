@@ -18,13 +18,12 @@ void printMenu()
 
 int main()
 {
-
   int choice = 0;
   int insertion;
   string fileName;
   ifstream din;
 
-  while(choice != 5)
+  while(choice != 6)
   {
     printMenu();
     cin >> choice;
