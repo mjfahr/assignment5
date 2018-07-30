@@ -12,7 +12,6 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
-
 */
 
 #ifndef FIBONACCIHEAP_H
@@ -43,9 +42,9 @@ public:
   void Delete(FibonacciNode<T>* node);
   void addChild(FibonacciNode<T>* _parent, FibonacciNode<T>* _child);
 
-  static FibonacciHeap<T> Merge(const FibonacciHeap<T>& one, const FibonacciHeap<T>& other);
+  static FibonacciHeap<T> Merge(FibonacciHeap<T>& one, FibonacciHeap<T>& other);
   FibonacciHeap<T> operator+(FibonacciHeap<T>& other) { return Merge(*this, other); }
-  FibonacciHeap<T> operator=(const FibonacciHeap<T>& other) { return new FibonacciHeap<T>(other); }
+
 
   bool isEmpty() { return smallest == nullptr; }
   void print();
@@ -460,25 +459,24 @@ void FibonacciHeap<T>::Delete(FibonacciNode<T>* node)
   // deleteMin()
 }
 
-//Merge: public: combines two fibonacci heaps into one by splicing together their top-level nodes. the two heaps are not deleted, but should not be used after calling this function.
-// NOTE: Alternatively, we could create a copy constructor and create an entirely new heap containing the same node values.
-// This would reduce the likelihood of bugs occuring if the original heaps are reused, but it would be slower and less memory-efficient.
+//Merge: public: combines two fibonacci heaps into one.
+//NOTE: no_preserve_args may optionally be set 'true' to speed up operation by eliminating the call to the copy constructor,
+//    however, this will cause changes to both input heaps, without destroying them.
 template <class T>
-FibonacciHeap<T> FibonacciHeap<T>::Merge(const FibonacciHeap<T>& one, const FibonacciHeap<T>& other)
+FibonacciHeap<T> FibonacciHeap<T>::Merge(FibonacciHeap<T>& one, FibonacciHeap<T>& other)
 {
-  FibonacciHeap<T>* first = new FibonacciHeap<T>(one);
-  FibonacciHeap<T>* second = new FibonacciHeap<T>(other);
-  // Link the two heaps
-  first->smallest->right->left = second->smallest->left;
-  second->smallest->left->right = first->smallest->right;
 
-  first->smallest->right = second->smallest;
-  second->smallest->left = first->smallest;
+  // Link the two heaps
+  one.smallest->right->left = other.smallest->left;
+  other.smallest->left->right = one.smallest->right;
+
+  one.smallest->right = other.smallest;
+  other.smallest->left = one.smallest;
 
   // Set the smallest node
-  first->smallest = (first->smallest->value <= second->smallest->value ? first->smallest : second->smallest);
+  one.smallest = (one.smallest->value <= other.smallest->value ? one.smallest : other.smallest);
 
-  return *first;
+  return one;
 }
 
 
