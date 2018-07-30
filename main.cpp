@@ -64,6 +64,7 @@ int main()
           break;
 
         case 6:
+          cout << "\nExiting.\n";
           break;
 
         default:
