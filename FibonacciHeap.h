@@ -44,7 +44,6 @@ public:
   static FibonacciHeap<T> Merge(FibonacciHeap<T>& one, FibonacciHeap<T>& other);
   FibonacciHeap<T> operator+(FibonacciHeap<T>& other) { return Merge(*this, other); }
 
-
   bool isEmpty() { return smallest == nullptr; }
   void print();
 
@@ -63,7 +62,7 @@ private:
 
   FibonacciNode<T>* smallest;
   int numNodes;
-  T MIN; // Smallest possible value for a node in the heap, generally defined for numeric types only.
+  static const T MIN = numeric_limits<T>::lowest(); // Smallest possible value for a node in the heap, generally defined for numeric types only.
 
 };
 
@@ -73,8 +72,8 @@ FibonacciHeap<T>::FibonacciHeap()
   smallest = nullptr;
   numNodes = 0;
   //Set the minimum possible value for any node (used to simplify code for deleting a node) NOTE: only works for numeric types
-  if (numeric_limits<T>::is_specialized)
-     MIN = numeric_limits<T>::lowest();
+  // if (numeric_limits<T>::is_specialized)
+  //    MIN = numeric_limits<T>::lowest();
 }
 
 template <class T>
@@ -85,8 +84,8 @@ FibonacciHeap<T>::FibonacciHeap(FibonacciNode<T>* node)
   smallest->left = node;
   numNodes = 1;
   //Set the minimum possible value for any node (used to simplify code for deleting a node) NOTE: only works for numeric types
-  if (numeric_limits<T>::is_specialized)
-     MIN = numeric_limits<T>::lowest();
+  // if (numeric_limits<T>::is_specialized)
+  //    MIN = numeric_limits<T>::lowest();
 }
 
 //copy constructor: creates a copy by appending all nodes in other heap to root list of new heap. Does not preserve heap topology.
@@ -95,8 +94,8 @@ FibonacciHeap<T>::FibonacciHeap(const FibonacciHeap<T>& other)
 {
   smallest = nullptr;
   numNodes = 0;
-  if (numeric_limits<T>::is_specialized)
-     MIN = numeric_limits<T>::lowest();
+  // if (numeric_limits<T>::is_specialized)
+  //    MIN = numeric_limits<T>::lowest();
 
   copyHelper(other.smallest);
 }

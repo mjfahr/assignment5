@@ -18,6 +18,7 @@ void printMenu()
 
 int main()
 {
+  FibonacciHeap<int> h1;
   int choice = 0;
   int insertion;
   string fileName;
@@ -68,5 +69,6 @@ int main()
           cout << "Invalid choice.\n";
           break;
     }
-    return 0;
   }
+  return 0;
+}
