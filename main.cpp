@@ -18,26 +18,7 @@ void printMenu()
 
 int main()
 {
-  FibonacciHeap<int> h1;
-  FibonacciHeap<int> h2;
 
-<<<<<<< HEAD
-  h1.Insert(4);
-  h1.Insert(10);
-  h1.Insert(5);
-  h1.Insert(7);
-
-  //h1.print();
-  //cout << "h1: Smallest: " << h1.peekMin() << endl;
-
-  h2.Insert(3);
-  h2.Insert(6);
-  h2.Insert(1);
-  h2.Insert(25);
-
-  //h2.print();
-  //cout << "h2: Smallest: " << h2.peekMin() << endl;
-=======
   int choice = 0;
   int insertion;
   string fileName;
@@ -87,22 +68,5 @@ int main()
           cout << "Invalid choice.\n";
           break;
     }
+    return 0;
   }
->>>>>>> 3dad7b53506faf4d06f36a3b44102b163b262f33
-
-  FibonacciHeap<int> h3 = FibonacciHeap<int>::Merge(h1, h2);
-  cout << "h3: " << endl;
-  h3.print();
-
-
-  // FibonacciHeap<int> h4 = h1;
-  // cout << "h4: " << endl;
-  // h4.print();
-  // cout << endl;
-  //
-  // FibonacciNode<int>* n1 = h1.getNode(5);
-  // h1.decreaseKey(n1, 2);
-  // cout << h1.peekMin() << endl;
-
-  return 0;
-}
