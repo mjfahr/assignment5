@@ -10,16 +10,11 @@ Compilation Instructions:
 
 The data structure consists of two header files, "FibonacciNode.h" and  "FibonacciHeap.h".
 
-To use the Fibonacci Heap, simply place these header files in the directory with your project,
-or your includes directory, and add
+To use the Fibonacci Heap, simply place these header files in the directory with your project, and add
 
   #include "FibonacciHeap.h"
 
-or
-
-  #include <FibonacciHeap.h>
-
-respectively, to the relevant files in your project, and compile normally.
+to the relevant files in your project, and compile normally.
 
 
 Also included is a custom "main.cpp" file containing some pre-written tests.
