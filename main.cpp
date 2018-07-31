@@ -11,20 +11,24 @@ void printMenu()
   "2) Insert multiple numbers by file\n" <<
   "3) Peek the minimum\n" <<
   "4) Delete the minimum\n" <<
-  "5) Print the Fibonacci Heap\n" <<
-  "6) Quit\n";
+  "5) Delete a node\n" <<
+  "6) Print the Fibonacci Heap\n" <<
+  "7) Quit\n";
 }
 
 
 int main()
 {
+  cout << "Welcome to the test program for the Fibonacci Heap. This code is written for testing using integers, but the heap should support all pre-defined c++ data types.\n";
   FibonacciHeap<int> h1;
   int choice = 0;
   int insertion;
   string fileName;
   ifstream din;
+  int nodeVal;
+  bool quit = false;
 
-  while(choice != 6)
+  while(!quit)
   {
     printMenu();
     cin >> choice;
@@ -40,7 +44,7 @@ int main()
         case 2:
           cout << "Enter the name of the file to read from (int only): ";
           cin >> fileName;
-          din.open(fileName);
+          din.open(fileName.c_str());
           while(din >> insertion)
             h1.Insert(insertion);
           din.close();
@@ -57,11 +61,18 @@ int main()
           break;
 
         case 5:
+          cout << "Which node would you like to delete?\n";
+          cin >> nodeVal;
+          h1.Delete(nodeVal);
+          break;
+
+        case 6:
           cout << "Printing Fibonacci Heap:\n";
           h1.print();
           break;
 
-        case 6:
+        case 7:
+          quit = true;
           cout << "\nExiting.\n";
           break;
 
