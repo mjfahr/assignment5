@@ -15,8 +15,10 @@ void printMenu()
   "4) Peek the minimum\n" <<
   "5) Delete the minimum\n" <<
   "6) Delete a node\n" <<
-  "7) Print the Fibonacci Heap\n" <<
-  "8) Quit\n";
+  "7) Decrease the key of a node\n" <<
+  "8) Get the rank/degree of a node\n" <<
+  "9) Print the Fibonacci Heap\n" <<
+  "10) Quit\n";
 }
 
 
@@ -56,7 +58,7 @@ int main()
           break;
 
         case 3:
-          cout << "How many random values would you like to insert? ";
+          cout << "How many random values would you like to insert?\n";
           cin >> valCount;
           for (int i = 0; i < valCount; i++)
             h1.Insert(rand() % 100);
@@ -80,11 +82,25 @@ int main()
           break;
 
         case 7:
+          cout << "Which node's key would you like to decrease?\n";
+          cin >> nodeVal;
+          cout << "Enter the new value of the node: ";
+          cin >> insertion;
+          h1.decreaseKey(h1.getNode(nodeVal), insertion);
+          break;
+
+        case 8:
+          cout << "Which node would you like to get the rank of?\n";
+          cin >> nodeVal;
+          cout << "Rank of " << nodeVal << ": " << h1.getRank(h1.getNode(nodeVal)) << endl;
+          break;
+
+        case 9:
           cout << "Printing Fibonacci Heap:\n";
           h1.print();
           break;
 
-        case 8:
+        case 10:
           quit = true;
           cout << "\nExiting.\n";
           break;

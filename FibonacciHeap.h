@@ -36,7 +36,7 @@ public:
   void Insert(const T _value);
 
   T peekMin() { return smallest->value; }
-  T extractMin();
+  FibonacciNode<T>* extractMin();
   FibonacciNode<T>* getNode(const T _value);
 
   bool decreaseKey(FibonacciNode<T>* node, T newKey);
@@ -50,6 +50,7 @@ public:
 
   bool isEmpty() { return smallest == nullptr; }
   void print();
+  int getRank(FibonacciNode<T>* node);
 
 private:
   void copyHelper(FibonacciNode<T>* node);
@@ -57,7 +58,6 @@ private:
   void printHelper(FibonacciNode<T>* root, int depth) const;
   FibonacciNode<T>* getNodeHelper(const T _value, FibonacciNode<T>* node);
 
-  int getRank(FibonacciNode<T>* node);
   void setSmallest();
   void addNode(FibonacciNode<T>* newNode);
 
@@ -223,10 +223,9 @@ void FibonacciHeap<T>::addChild(FibonacciNode<T>* _parent, FibonacciNode<T>* _ch
 
 //deleteMin: Public: Removes the minimum value of the heap, a.k.a the root of 'smallest'. This removes ONLY the root, not the entire heap.
 template <class T>
-T FibonacciHeap<T>::extractMin()
+FibonacciNode<T>* FibonacciHeap<T>::extractMin()
 {
-  T returnVal = smallest->value;
-
+  FibonacciNode<T>* returnNode = smallest;
   if (!isEmpty())
   {
     // Add smallest's children to the top level of the heap
@@ -245,13 +244,11 @@ T FibonacciHeap<T>::extractMin()
     // Remove smallest from the heap and reconnect doubly linked list
     if (smallest != smallest->right) // smallest is not the only node
     {
+      // remove smallest from root list
       smallest->left->right = smallest->right;
       smallest->right->left = smallest->left;
 
-      // delete smallest
-      FibonacciNode<T>* toDel = smallest;
       smallest = smallest->right; // set new smallest to be the right sibling of the current smallest (arbitrary choice), will be changed later.
-      delete toDel;
       numNodes--;
 
       // find the new smallest node
@@ -268,10 +265,10 @@ T FibonacciHeap<T>::extractMin()
       move = smallest->right;
       do
       {
-        //If it does match another node, and is not comparing with itself
+        //while move matches another node
         while (ranks[move->rank] != NULL)
         {
-          //Find the greater value
+          //Find the greater and lesser values
           FibonacciNode<T>* greater = (move->value >= ranks[move->rank]->value ? move : ranks[move->rank]);
           FibonacciNode<T>* lesser = (move->value >= ranks[move->rank]->value ? ranks[move->rank] : move);
 
@@ -295,10 +292,10 @@ T FibonacciHeap<T>::extractMin()
           //update the rank-tracking array
           ranks[move->rank] = NULL;
 
-          //make bigger node a child of the smaller node
+          //make bigger node a child of the smaller node, incrementing lesser->rank
           addChild(lesser, greater);
 
-          // if 'move' node is the larger of the two, it will become a child,
+          // if move == greater, it will become a child of lesser,
           // so bring it back up to root list.
           move = lesser;
         }
@@ -309,14 +306,13 @@ T FibonacciHeap<T>::extractMin()
       } while (move != smallest);
 
     }
+    else // the heap has only one node
+    {
+      smallest = nullptr;
+      numNodes = 0;
+    }
   }
-  else // the heap has only one node
-  {
-    delete smallest;
-    smallest = nullptr;
-    numNodes = 0;
-  }
-  return returnVal;
+  return returnNode;
 }
 
 //getNode: public: returns a pointer to a node in the heap, for use in the decreaseKey and delete functions.
@@ -393,14 +389,14 @@ void FibonacciHeap<T>::cut(FibonacciNode<T>* node)
       node->parent->child = node->right;
   }
   else
+  {
     node->parent->child = nullptr;
-
+  }
   // decrease the degree/rank of the parent, since we removed a child
   node->parent->rank--;
   node->marked = false;
 
   addNode(node);
-
 }
 
 template <class T>
@@ -412,8 +408,9 @@ void FibonacciHeap<T>::cascadingCut(FibonacciNode<T>* node)
       node->marked = true;
     else
     {
+      FibonacciNode<T>* p = node->parent;
       cut(node);
-      cascadingCut(node->parent);
+      cascadingCut(p);
     }
   }
 }
@@ -425,6 +422,8 @@ bool FibonacciHeap<T>::decreaseKey(FibonacciNode<T>* node, T newKey)
   // if the new value does not decrease the key of the node
   if (newKey > node->value)
     return false;
+  else if (newKey == node->value)
+    return true;
   else
   {
     node->value = newKey;
@@ -432,8 +431,9 @@ bool FibonacciHeap<T>::decreaseKey(FibonacciNode<T>* node, T newKey)
     // if the heap order is violated and the node is not a member of the root list, restore the heap order
     if (node->parent != nullptr && node->parent->value > node->value)
     {
+      FibonacciNode<T>* p = node->parent;
       cut(node);
-      cascadingCut(node->parent);
+      cascadingCut(p);
     }
 
     if (node->value < smallest->value)
@@ -481,27 +481,17 @@ FibonacciHeap<T> FibonacciHeap<T>::Merge(FibonacciHeap<T>& one, FibonacciHeap<T>
 }
 
 
-//getRank: private: return the number of children of a node.
+//getRank: public: return the number of children of a node.
 template <class T>
 int FibonacciHeap<T>::getRank(FibonacciNode<T>* node)
 {
-  int rank = 0;
-  FibonacciNode<T>* init = node->child;
-
-  if (init != nullptr)
-  {
-    FibonacciNode<T>* ptr = init->right;
-    rank++;
-
-    while (ptr != init)
-    {
-      rank++;
-      ptr = ptr->right;
-    }
-  }
-
-  return rank;
+  if (node != nullptr)
+    return node->rank;
+  else
+    return -1;
 }
+
+
 
 template <class T>
 void FibonacciHeap<T>::print()
