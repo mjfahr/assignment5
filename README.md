@@ -8,13 +8,13 @@ O(log(N)) 'extract_min' and 'delete' operations.
 This heap implementation is intended to function with all pre-defined C++ data types.
 
 
-# Compilation Instructions:
+## Compilation Instructions:
 
 The data structure consists of two header files, "FibonacciNode.h" and  "FibonacciHeap.h".
 
 To use the Fibonacci Heap, simply place these header files in the directory with your project, and add
 
-  #include "FibonacciHeap.h"
+    #include "FibonacciHeap.h"
 
 to the relevant files in your project, and compile normally.
 
