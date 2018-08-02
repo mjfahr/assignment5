@@ -334,7 +334,8 @@ FibonacciNode<T>* FibonacciHeap<T>::getNodeHelper(const T _value, FibonacciNode<
     {
       if (ptr->value == _value)
         return ptr;
-
+      else if (ptr->value > _value)
+        ptr = ptr->right;
       else
       {
 
