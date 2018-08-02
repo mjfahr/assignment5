@@ -14,7 +14,7 @@ The data structure consists of two header files, "FibonacciNode.h" and  "Fibonac
 
 To use the Fibonacci Heap, simply place these header files in the directory with your project, and add
 
-  # #include "FibonacciHeap.h"
+  #include "FibonacciHeap.h"
 
 to the relevant files in your project, and compile normally.
 
